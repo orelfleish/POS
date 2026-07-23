@@ -57,6 +57,11 @@ class Pattern(Entry):
             (self.id, self.recurrence_rule, self.default_duration_min)  
         )
 
+    @staticmethod
+    def get_all(cursor):
+        cursor.execute("SELECT entry_id, recurrence_rule, default_duration_min FROM patterns")
+        return cursor.fetchall()
+
 class Task(Entry):
     def __init__(self, id, entry_type, title, scheduled_date, notes, completed, pattern_id):
         super().__init__(id, entry_type, title, scheduled_date, notes)
@@ -107,7 +112,10 @@ class CVVersion:
         new_id = cursor.lastrowid
         self.id = new_id
 
-
+    @staticmethod
+    def get_all(cursor):
+        cursor.execute("SELECT id, filename  FROM cv_versions")
+        return cursor.fetchall()
 
 
 

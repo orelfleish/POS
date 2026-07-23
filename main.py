@@ -22,9 +22,15 @@ while True:
         role = input("Enter role: ")
         status = input("Enter status: ")
         job_link = input("Enter job link: ")
+        print("Available CV versions:")
+        cv_versions = models.CVVersion.get_all(cursor)
+        for cv in cv_versions:
+            print(f"ID: {cv[0]}, Filename: {cv[1]}")
+        cv_id = input("Enter CV version ID from the list above: ")  # something to notice is "input validation topic"
+        cv_version_id = int(cv_id) if cv_id else None
         
         
-        job_application = models.JobApplication(None, "job_application", title, scheduled_date, notes, company, role, status, job_link, cv_version_id = None)
+        job_application = models.JobApplication(None, "job_application", title, scheduled_date, notes, company, role, status, job_link, cv_version_id)
         job_application.save(cursor)
         connection.commit()
         print("Job application added successfully.")
@@ -48,7 +54,13 @@ while True:
         scheduled_date = input("Enter scheduled date (YYYY-MM-DD): ")
         notes = input("Enter notes: ")
         completed = input("Is the task completed? (yes/no): ").lower() == "yes"
-        pattern_id = None
+        print("Available Patterns:")
+        patterns = models.Pattern.get_all(cursor)
+        for pattern in patterns:
+            print(f"ID: {pattern[0]}, Recurrence Rule: {pattern[1]}, Default Duration: {pattern[2]} minutes")
+        pattern_id_input = input("Enter Pattern ID from the list above (or leave blank): ")
+        pattern_id = int(pattern_id_input) if pattern_id_input else None
+        
         
         task = models.Task(None, "task", title, scheduled_date, notes, completed, pattern_id)
         task.save(cursor)
@@ -72,8 +84,5 @@ while True:
         connection.commit()
         print("Exiting...")
         break
-
-
-
 
 
