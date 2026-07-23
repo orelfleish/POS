@@ -1,6 +1,7 @@
 from datetime import datetime
 
 
+
 class Entry:
     def __init__(self, id, entry_type, title, scheduled_date, notes):
         self.id = id
@@ -22,6 +23,7 @@ class Entry:
         self.id = new_id
 
 
+
 class JobApplication(Entry):
     def __init__(self, id, entry_type, title, scheduled_date, notes, company, role, status, job_link, cv_version_id):
         super().__init__(id, entry_type, title, scheduled_date, notes)
@@ -40,6 +42,13 @@ class JobApplication(Entry):
             "INSERT INTO job_applications (entry_id, company, role, status, job_link, cv_version_id) VALUES (%s, %s, %s, %s, %s, %s)",
             (self.id, self.company, self.role, self.status, self.job_link, self.cv_version_id)
         )
+
+    @staticmethod
+    def get_all(cursor):
+        cursor.execute("SELECT entry_id, company, role, status, job_link, cv_version_id FROM job_applications")
+        return cursor.fetchall()
+
+
 
 class Pattern(Entry):
     def __init__(self, id, entry_type, title, scheduled_date, notes, recurrence_rule, default_duration_min):
@@ -62,6 +71,8 @@ class Pattern(Entry):
         cursor.execute("SELECT entry_id, recurrence_rule, default_duration_min FROM patterns")
         return cursor.fetchall()
 
+
+
 class Task(Entry):
     def __init__(self, id, entry_type, title, scheduled_date, notes, completed, pattern_id):
         super().__init__(id, entry_type, title, scheduled_date, notes)
@@ -77,6 +88,12 @@ class Task(Entry):
             "INSERT INTO tasks (entry_id, completed, pattern_id) VALUES (%s, %s, %s)",
             (self.id, self.completed, self.pattern_id)    
         )
+    @staticmethod
+    def get_all(cursor):
+        cursor.execute("SELECT entry_id, completed, pattern_id FROM tasks")
+        return cursor.fetchall()
+
+
 
 class JournalEntry(Entry):
     def __init__(self, id, entry_type, title, scheduled_date, notes, content, mood):
@@ -93,6 +110,13 @@ class JournalEntry(Entry):
             "INSERT INTO journal_entries (entry_id, content, mood) VALUES (%s, %s, %s)",
             (self.id, self.content, self.mood)    
         )
+    
+    @staticmethod
+    def get_all(cursor):
+        cursor.execute("SELECT entry_id, content, mood FROM journal_entries")
+        return cursor.fetchall()
+
+
 
 class CVVersion:
     def __init__(self, id, filename, notes):
