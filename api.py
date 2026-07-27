@@ -1,7 +1,10 @@
 import models
 import database
 from fastapi import FastAPI
-from pydantic import BaseModel
+from pydantic import BaseModel, Field, HttpUrl
+from typing import Literal
+from datetime import date
+
 
 app = FastAPI()
 
@@ -14,13 +17,13 @@ def read_root():
 
 #schema for job application request
 class JobApplicationRequest(BaseModel):
-    title: str
-    scheduled_date: str
-    notes: str
-    company: str
-    role: str
-    status: str
-    job_link: str
+    title: str = Field(min_length=1, max_length=255)
+    scheduled_date: date
+    notes: str = Field(max_length=2000)
+    company: str = Field(min_length=1, max_length=255)
+    role: str = Field(min_length=1, max_length=255)
+    status: Literal["applied", "interview", "offer", "rejected"]
+    job_link: HttpUrl | None = None
     cv_version_id: int | None = None
 
 #create a new job application
@@ -80,11 +83,11 @@ def get_cv_versions():
 
 #schema for pattern request
 class PatternRequest(BaseModel):
-    title: str
-    scheduled_date: str
-    notes: str
-    recurrence_rule: str
-    default_duration_min: int
+    title: str = Field(min_length=1, max_length=255)
+    scheduled_date: date
+    notes: str = Field(max_length=2000)
+    recurrence_rule: str = Field(min_length=1, max_length=100)  # e.g., "FREQ=DAILY;INTERVAL=1"
+    default_duration_min: int = Field(gt=0, le=1440)  # duration in minutes, must be between 1 and 1440
 
 #create a new pattern
 @app.post("/patterns")
@@ -126,10 +129,10 @@ def get_patterns():
 
 #schema for task request
 class TaskRequest(BaseModel):
-    title: str
-    scheduled_date: str
-    notes: str
-    completed: bool
+    title: str = Field(min_length=1, max_length=255)
+    scheduled_date: date
+    notes: str = Field(max_length=2000)
+    completed: bool 
     pattern_id: int | None = None
 
 #create a new task
@@ -171,11 +174,11 @@ def get_tasks():
 
 #schema for journal entry request
 class JournalEntryRequest(BaseModel):
-    title: str
-    scheduled_date: str
-    notes: str
-    content: str
-    mood: str
+    title: str = Field(min_length=1, max_length=255)
+    scheduled_date: date
+    notes: str = Field(max_length=2000)
+    content: str = Field(min_length=1, max_length=2000)
+    mood: Literal["happy", "sad", "neutral", "excited", "angry", "anxious", "content", "bored", "confused", "frustrated"] | None = None
 
 #create a new journal entry
 @app.post("/journal-entries")
