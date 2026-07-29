@@ -1,6 +1,6 @@
 import models
 import database
-
+import secrets
 
 
 
@@ -86,3 +86,4 @@ while True:
         break
 
 
+print(secrets.token_hex(32))  # Generates a random 32-byte hex string for API key

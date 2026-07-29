@@ -45,7 +45,21 @@ class JobApplication(Entry):
 
     @staticmethod
     def get_all(cursor):
-        cursor.execute("SELECT entry_id, company, role, status, job_link, cv_version_id FROM job_applications")
+        cursor.execute("""
+                       SELECT
+                            j.entry_id,
+                            e.title,
+                            e.scheduled_date,
+                            e.notes,
+                            j.company,
+                            j.role,
+                            j.status,
+                            j.job_link,
+                            j.cv_version_id
+                       FROM job_applications j
+                       JOIN entries e
+                       ON j.entry_id = e.id
+                    """)
         return cursor.fetchall()
 
 
@@ -68,7 +82,18 @@ class Pattern(Entry):
 
     @staticmethod
     def get_all(cursor):
-        cursor.execute("SELECT entry_id, recurrence_rule, default_duration_min FROM patterns")
+        cursor.execute("""
+                       SELECT
+                          p.entry_id,
+                          e.title,
+                          e.scheduled_date,
+                          e.notes,
+                          p.recurrence_rule,
+                          p.default_duration_min
+                       FROM patterns p
+                       JOIN entries e 
+                       ON p.entry_id = e.id
+                    """)
         return cursor.fetchall()
 
 
@@ -90,7 +115,18 @@ class Task(Entry):
         )
     @staticmethod
     def get_all(cursor):
-        cursor.execute("SELECT entry_id, completed, pattern_id FROM tasks")
+        cursor.execute("""
+                       SELECT
+                            t.entry_id,
+                            e.title,
+                            e.scheduled_date,
+                            e.notes,
+                            t.completed,
+                            t.pattern_id
+                       FROM tasks t
+                       JOIN entries e
+                       ON t.entry_id = e.id
+                    """)
         return cursor.fetchall()
 
 
@@ -113,7 +149,18 @@ class JournalEntry(Entry):
     
     @staticmethod
     def get_all(cursor):
-        cursor.execute("SELECT entry_id, content, mood FROM journal_entries")
+        cursor.execute("""
+                       SELECT
+                            j.entry_id,
+                            e.title,
+                            e.scheduled_date,
+                            e.notes,
+                            j.content,
+                            j.mood
+                       FROM journal_entries j
+                       JOIN entries e
+                       ON j.entry_id = e.id
+                    """)
         return cursor.fetchall()
 
 

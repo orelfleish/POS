@@ -1,12 +1,25 @@
 import models
 import database
-from fastapi import FastAPI
+import config
+from fastapi import FastAPI, Header, HTTPException, Depends
 from pydantic import BaseModel, Field, HttpUrl
 from typing import Literal
 from datetime import date
+from fastapi.middleware.cors import CORSMiddleware
 
 
-app = FastAPI()
+def verify_api_key(x_api_key: str = Header(...)):
+    if x_api_key != config.API_KEY:
+        raise HTTPException(status_code=401, detail="Invalid API Key")
+
+app = FastAPI(dependencies=[Depends(verify_api_key)])
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Allows all origins
+    allow_methods=["*"],  # Allows all methods
+    allow_headers=["*"],  # Allows all headers
+)
 
 #root endpoint to check if the API is running
 @app.get("/")
@@ -41,7 +54,7 @@ def create_job_application(request: JobApplicationRequest):
         request.company,
         request.role,
         request.status,
-        request.job_link,
+        request.job_link if request.job_link is None else str(request.job_link),
         request.cv_version_id
     )
     job.save(cursor)
@@ -63,8 +76,31 @@ def get_job_applications():
     cursor.close()
     connection.close()
 
-    return {"job_applications": [{"entry_id": job[0], "company": job[1], "role": job[2], "status": job[3], "job_link": job[4], "cv_version_id": job[5]} for job in job_applications]}
+    return {"job_applications": [{"entry_id": job[0], "title": job[1], "scheduled_date": job[2], "notes": job[3], "company": job[4], "role": job[5], "status": job[6], "job_link": job[7], "cv_version_id": job[8]} for job in job_applications]}
 
+
+
+#schema for cv version request
+class CVVersionRequest(BaseModel):
+    filename: str = Field(min_length=1, max_length=255)
+
+#create a new cv version
+@app.post("/cv-versions")
+def create_cv_version(request: CVVersionRequest):
+    connection = database.get_db_connection()
+    cursor = connection.cursor()
+
+    cv_version = models.CVVersion(
+        None,
+        request.filename
+    )
+    cv_version.save(cursor)
+    connection.commit()
+
+    cursor.close()
+    connection.close()
+
+    return {"message": "CV version added successfully.", "id": cv_version.id}
 
 #get all cv versions
 @app.get("/cv-versions")
@@ -123,7 +159,7 @@ def get_patterns():
     cursor.close()
     connection.close()
 
-    return {"patterns": [{"entry_id": pattern[0], "recurrence_rule": pattern[1], "default_duration_min": pattern[2]} for pattern in patterns]}
+    return {"patterns": [{"entry_id": pattern[0], "title": pattern[1], "scheduled_date": pattern[2], "notes": pattern[3], "recurrence_rule": pattern[4], "default_duration_min": pattern[5]} for pattern in patterns]}
 
 
 
@@ -169,7 +205,7 @@ def get_tasks():
     cursor.close()
     connection.close()
 
-    return {"tasks": [{"entry_id": task[0], "completed": task[1], "pattern_id": task[2]} for task in tasks]}
+    return {"tasks": [{"entry_id": task[0], "title": task[1], "scheduled_date": task[2], "notes": task[3], "completed": task[4], "pattern_id": task[5]} for task in tasks]}
 
 
 #schema for journal entry request
@@ -214,4 +250,4 @@ def get_journal_entries():
     cursor.close()
     connection.close()
 
-    return {"journal_entries": [{"entry_id": entry[0], "content": entry[1], "mood": entry[2]} for entry in journal_entries]}
+    return {"journal_entries": [{"entry_id": entry[0], "title": entry[1], "scheduled_date": entry[2], "notes": entry[3], "content": entry[4], "mood": entry[5]} for entry in journal_entries]}
