@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>POS — Field Log</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --cover:#1C2430;
+    --cover-2:#252F3D;
+    --page:#F2EEE3;
+    --page-2:#E8E2D2;
+    --ink:#20241F;
+    --ink-soft:#5B5A4E;
+    --brass:#B8863B;
+    --brass-dark:#8F6626;
+    --teal:#2F6F6B;
+    --rust:#B24C3B;
+    --line:#D8D0BC;
+    --line-dark:#33404F;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--cover);
+    color:var(--ink);
+    font-family:'Inter',sans-serif;
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+  }
+  .topbar{
+    background:var(--cover);
+    color:#EDEAE1;
+    padding:18px 28px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    border-bottom:1px solid var(--line-dark);
+    flex-wrap:wrap;
+    gap:12px;
+  }
+  .brand{display:flex;align-items:baseline;gap:10px;}
+  .brand h1{
+    font-family:'Fraunces',serif;
+    font-size:26px;
+    font-weight:700;
+    margin:0;
+    letter-spacing:0.5px;
+  }
+  .brand span{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    color:var(--brass);
+    text-transform:uppercase;
+    letter-spacing:1.5px;
+  }
+  .conn{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px;
+  }
+  .conn input{
+    background:var(--cover-2);
+    border:1px solid var(--line-dark);
+    color:#EDEAE1;
+    padding:7px 10px;
+    border-radius:4px;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px;
+    width:220px;
+  }
+  .conn button{
+    background:var(--brass);
+    color:var(--cover);
+    border:none;
+    padding:8px 14px;
+    border-radius:4px;
+    font-weight:600;
+    font-size:12px;
+    cursor:pointer;
+    font-family:'Inter',sans-serif;
+  }
+  .conn button:hover{background:#CE9A4C;}
+  .dot{width:8px;height:8px;border-radius:50%;background:var(--ink-soft);}
+  .dot.ok{background:var(--teal);}
+  .dot.bad{background:var(--rust);}
+  .shell{
+    display:flex;
+    flex:1;
+    min-height:0;
+  }
+  nav{
+    width:190px;
+    background:var(--cover);
+    padding:22px 0;
+    display:flex;
+    flex-direction:column;
+    gap:2px;
+    border-right:1px solid var(--line-dark);
+    flex-shrink:0;
+  }
+  nav button{
+    background:transparent;
+    border:none;
+    color:#B7BDC9;
+    text-align:left;
+    padding:11px 26px;
+    font-family:'Inter',sans-serif;
+    font-size:14px;
+    font-weight:500;
+    cursor:pointer;
+    border-left:3px solid transparent;
+  }
+  nav button:hover{color:#EDEAE1;}
+  nav button.active{
+    color:#EDEAE1;
+    border-left:3px solid var(--brass);
+    background:var(--cover-2);
+  }
+  main{
+    flex:1;
+    background:var(--page);
+    padding:32px 40px 60px;
+    overflow-y:auto;
+  }
+  .section{display:none;}
+  .section.active{display:block;}
+  h2{
+    font-family:'Fraunces',serif;
+    font-size:26px;
+    margin:0 0 4px;
+    color:var(--ink);
+  }
+  .subhead{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px;
+    color:var(--ink-soft);
+    margin-bottom:24px;
+    text-transform:uppercase;
+    letter-spacing:1px;
+  }
+  .card{
+    background:#FBF9F3;
+    border:1px solid var(--line);
+    border-radius:6px;
+    padding:22px 24px;
+    margin-bottom:22px;
+    position:relative;
+  }
+  .card::before{
+    content:"";
+    position:absolute;
+    top:0; right:0;
+    width:0; height:0;
+    border-style:solid;
+    border-width:0 16px 16px 0;
+    border-color:transparent var(--page-2) transparent transparent;
+  }
+  .card h3{
+    font-family:'Inter',sans-serif;
+    font-size:13px;
+    text-transform:uppercase;
+    letter-spacing:1px;
+    color:var(--brass-dark);
+    margin:0 0 16px;
+  }
+  .grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:14px;
+  }
+  .field{display:flex;flex-direction:column;gap:5px;}
+  .field.full{grid-column:1 / -1;}
+  .field label{
+    font-size:12px;
+    color:var(--ink-soft);
+    font-weight:500;
+  }
+  .field input, .field select, .field textarea{
+    border:1px solid var(--line);
+    background:#fff;
+    border-radius:4px;
+    padding:9px 10px;
+    font-family:'Inter',sans-serif;
+    font-size:14px;
+    color:var(--ink);
+  }
+  .field textarea{resize:vertical;min-height:44px;}
+  .submit-row{
+    margin-top:18px;
+    display:flex;
+    align-items:center;
+    gap:14px;
+  }
+  .btn-primary{
+    background:var(--teal);
+    color:#fff;
+    border:none;
+    padding:10px 20px;
+    border-radius:4px;
+    font-weight:600;
+    font-size:14px;
+    cursor:pointer;
+    font-family:'Inter',sans-serif;
+  }
+  .btn-primary:hover{background:#25605C;}
+  .status-msg{font-family:'IBM Plex Mono',monospace;font-size:12px;}
+  .status-msg.ok{color:var(--teal);}
+  .status-msg.bad{color:var(--rust);}
+  .list-title{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:1px;
+    color:var(--ink-soft);
+    margin:28px 0 10px;
+  }
+  .row{
+    display:flex;
+    align-items:center;
+    gap:16px;
+    background:#fff;
+    border:1px solid var(--line);
+    border-left:4px solid var(--brass);
+    border-radius:4px;
+    padding:12px 16px;
+    margin-bottom:8px;
+  }
+  .row .id{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    color:var(--ink-soft);
+    background:var(--page-2);
+    padding:3px 7px;
+    border-radius:3px;
+    flex-shrink:0;
+  }
+  .row .main{flex:1; min-width:0;}
+  .row .main .title{
+    font-family:'Fraunces',serif;
+    font-weight:600;
+    font-size:15px;
+  }
+  .row .main .meta{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px;
+    color:var(--ink-soft);
+    margin-top:2px;
+  }
+  .badge{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    padding:3px 9px;
+    border-radius:20px;
+    text-transform:uppercase;
+    letter-spacing:0.5px;
+    flex-shrink:0;
+  }
+  .badge.applied{background:#DCE7EA;color:var(--teal);}
+  .badge.interview{background:#F3E6C8;color:var(--brass-dark);}
+  .badge.offer{background:#DDEBD8;color:#3F7A3A;}
+  .badge.rejected{background:#F2DAD5;color:var(--rust);}
+  .badge.mood{background:var(--page-2);color:var(--ink-soft);}
+  .empty{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:13px;
+    color:var(--ink-soft);
+    padding:20px;
+    text-align:center;
+    border:1px dashed var(--line);
+    border-radius:6px;
+  }
+  .overview-day{margin-bottom:22px;}
+  .overview-day .date{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px;
+    color:var(--brass-dark);
+    text-transform:uppercase;
+    letter-spacing:1px;
+    margin-bottom:8px;
+  }
+  .type-tag{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:10px;
+    text-transform:uppercase;
+    color:var(--ink-soft);
+    letter-spacing:0.5px;
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand">
+    <h1>POS</h1>
+    <span>Field Log</span>
+  </div>
+  <div class="conn">
+    <span class="dot" id="connDot"></span>
+    <span id="connText">not connected</span>
+    <input type="password" id="apiKeyInput" placeholder="x-api-key">
+    <button onclick="connect()">Connect</button>
+  </div>
+</div>
+
+<div class="shell">
+  <nav>
+    <button class="active" data-tab="overview" onclick="showTab('overview')">Overview</button>
+    <button data-tab="jobs" onclick="showTab('jobs')">Job Applications</button>
+    <button data-tab="patterns" onclick="showTab('patterns')">Patterns</button>
+    <button data-tab="tasks" onclick="showTab('tasks')">Tasks</button>
+    <button data-tab="journal" onclick="showTab('journal')">Journal</button>
+    <button data-tab="cvs" onclick="showTab('cvs')">CV Bank</button>
+  </nav>
+
+  <main>
+
+    <section class="section active" id="tab-overview">
+      <h2>Overview</h2>
+      <div class="subhead">everything, by scheduled date</div>
+      <div id="overviewList"><div class="empty">Connect to your API to load entries.</div></div>
+    </section>
+
+    <section class="section" id="tab-jobs">
+      <h2>Job Applications</h2>
+      <div class="subhead">log a role, track its status</div>
+      <div class="card">
+        <h3>New job application</h3>
+        <div class="grid">
+          <div class="field"><label>Title</label><input id="job-title"></div>
+          <div class="field"><label>Scheduled date</label><input type="date" id="job-date"></div>
+          <div class="field"><label>Company</label><input id="job-company"></div>
+          <div class="field"><label>Role</label><input id="job-role"></div>
+          <div class="field">
+            <label>Status</label>
+            <select id="job-status">
+              <option value="applied">applied</option>
+              <option value="interview">interview</option>
+              <option value="offer">offer</option>
+              <option value="rejected">rejected</option>
+            </select>
+          </div>
+          <div class="field"><label>Job link (optional)</label><input id="job-link" placeholder="https://..."></div>
+          <div class="field"><label>CV version (optional)</label><select id="job-cv"><option value="">— none —</option></select></div>
+          <div class="field full"><label>Notes</label><textarea id="job-notes"></textarea></div>
+        </div>
+        <div class="submit-row">
+          <button class="btn-primary" onclick="submitJob()">Save job application</button>
+          <span class="status-msg" id="job-msg"></span>
+        </div>
+      </div>
+      <div class="list-title">Saved</div>
+      <div id="jobList"><div class="empty">Nothing yet.</div></div>
+    </section>
+
+    <section class="section" id="tab-patterns">
+      <h2>Patterns</h2>
+      <div class="subhead">recurring templates — drag onto real days later</div>
+      <div class="card">
+        <h3>New pattern</h3>
+        <div class="grid">
+          <div class="field"><label>Title</label><input id="pat-title"></div>
+          <div class="field"><label>Scheduled date</label><input type="date" id="pat-date"></div>
+          <div class="field"><label>Recurrence rule</label><input id="pat-rule" placeholder="e.g. MON,WED,FRI"></div>
+          <div class="field"><label>Default duration (min)</label><input type="number" id="pat-duration" min="1" max="1440"></div>
+          <div class="field full"><label>Notes</label><textarea id="pat-notes"></textarea></div>
+        </div>
+        <div class="submit-row">
+          <button class="btn-primary" onclick="submitPattern()">Save pattern</button>
+          <span class="status-msg" id="pat-msg"></span>
+        </div>
+      </div>
+      <div class="list-title">Saved</div>
+      <div id="patternList"><div class="empty">Nothing yet.</div></div>
+    </section>
+
+    <section class="section" id="tab-tasks">
+      <h2>Tasks</h2>
+      <div class="subhead">one real occurrence, on one real day</div>
+      <div class="card">
+        <h3>New task</h3>
+        <div class="grid">
+          <div class="field"><label>Title</label><input id="task-title"></div>
+          <div class="field"><label>Scheduled date</label><input type="date" id="task-date"></div>
+          <div class="field">
+            <label>Completed</label>
+            <select id="task-completed"><option value="false">no</option><option value="true">yes</option></select>
+          </div>
+          <div class="field"><label>Pattern (optional)</label><select id="task-pattern"><option value="">— none —</option></select></div>
+          <div class="field full"><label>Notes</label><textarea id="task-notes"></textarea></div>
+        </div>
+        <div class="submit-row">
+          <button class="btn-primary" onclick="submitTask()">Save task</button>
+          <span class="status-msg" id="task-msg"></span>
+        </div>
+      </div>
+      <div class="list-title">Saved</div>
+      <div id="taskList"><div class="empty">Nothing yet.</div></div>
+    </section>
+
+    <section class="section" id="tab-journal">
+      <h2>Journal</h2>
+      <div class="subhead">the diary part</div>
+      <div class="card">
+        <h3>New entry</h3>
+        <div class="grid">
+          <div class="field"><label>Title</label><input id="jrn-title"></div>
+          <div class="field"><label>Scheduled date</label><input type="date" id="jrn-date"></div>
+          <div class="field">
+            <label>Mood</label>
+            <select id="jrn-mood">
+              <option value="happy">happy</option><option value="content">content</option>
+              <option value="excited">excited</option><option value="neutral">neutral</option>
+              <option value="bored">bored</option><option value="confused">confused</option>
+              <option value="anxious">anxious</option><option value="frustrated">frustrated</option>
+              <option value="sad">sad</option><option value="angry">angry</option>
+            </select>
+          </div>
+          <div class="field full"><label>Content</label><textarea id="jrn-content" style="min-height:80px;"></textarea></div>
+          <div class="field full"><label>Notes</label><textarea id="jrn-notes"></textarea></div>
+        </div>
+        <div class="submit-row">
+          <button class="btn-primary" onclick="submitJournal()">Save entry</button>
+          <span class="status-msg" id="jrn-msg"></span>
+        </div>
+      </div>
+      <div class="list-title">Saved</div>
+      <div id="journalList"><div class="empty">Nothing yet.</div></div>
+    </section>
+
+    <section class="section" id="tab-cvs">
+      <h2>CV Bank</h2>
+      <div class="subhead">reusable across job applications</div>
+      <div class="card">
+        <h3>New CV version</h3>
+        <div class="grid">
+          <div class="field full"><label>Filename</label><input id="cv-filename" placeholder="e.g. backend_cv_v2.pdf"></div>
+        </div>
+        <div class="submit-row">
+          <button class="btn-primary" onclick="submitCV()">Save CV version</button>
+          <span class="status-msg" id="cv-msg"></span>
+        </div>
+      </div>
+      <div class="list-title">Saved</div>
+      <div id="cvList"><div class="empty">Nothing yet.</div></div>
+    </section>
+
+  </main>
+</div>
+
+<script>
+  const API_BASE = "http://127.0.0.1:8000";
+  let apiKey = "";
+
+  function showTab(name){
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+    document.getElementById('tab-' + name).classList.add('active');
+    document.querySelector(`nav button[data-tab="${name}"]`).classList.add('active');
+  }
+
+  async function apiFetch(path, options = {}) {
+    const res = await fetch(API_BASE + path, {
+      ...options,
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        ...(options.headers || {})
+      }
+    });
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({}));
+      throw new Error(body.detail ? JSON.stringify(body.detail) : `HTTP ${res.status}`);
+    }
+    return res.json();
+  }
+
+  async function connect(){
+    apiKey = document.getElementById('apiKeyInput').value.trim();
+    const dot = document.getElementById('connDot');
+    const text = document.getElementById('connText');
+    try {
+      await apiFetch('/cv-versions');
+      dot.className = 'dot ok';
+      text.textContent = 'connected';
+      await loadAll();
+    } catch (e) {
+      dot.className = 'dot bad';
+      text.textContent = 'connection failed';
+      console.error(e);
+    }
+  }
+
+  async function loadAll(){
+    await Promise.all([loadCVs(), loadPatterns(), loadJobs(), loadTasks(), loadJournal()]);
+    buildOverview();
+  }
+
+  function badgeClass(status){ return 'badge ' + status; }
+
+  function row(idText, title, date, metaExtra, badgeHtml){
+    return `<div class="row">
+      <span class="id">#${idText}</span>
+      <div class="main">
+        <div class="title">${title || '(untitled)'}</div>
+        <div class="meta">${date || 'no date'} ${metaExtra ? '· ' + metaExtra : ''}</div>
+      </div>
+      ${badgeHtml || ''}
+    </div>`;
+  }
+
+  let cache = { jobs: [], patterns: [], tasks: [], journal: [], cvs: [] };
+
+  async function loadCVs(){
+    const data = await apiFetch('/cv-versions');
+    cache.cvs = data.cv_versions;
+    const list = document.getElementById('cvList');
+    list.innerHTML = cache.cvs.length ? cache.cvs.map(c =>
+      row(c.id, c.filename, '', '', '')
+    ).join('') : '<div class="empty">No CVs yet.</div>';
+
+    const sel = document.getElementById('job-cv');
+    sel.innerHTML = '<option value="">— none —</option>' +
+      cache.cvs.map(c => `<option value="${c.id}">${c.filename}</option>`).join('');
+  }
+
+  async function loadPatterns(){
+    const data = await apiFetch('/patterns');
+    cache.patterns = data.patterns;
+    const list = document.getElementById('patternList');
+    list.innerHTML = cache.patterns.length ? cache.patterns.map(p =>
+      row(p.entry_id, p.title, p.scheduled_date, `${p.recurrence_rule} · ${p.default_duration_min}min`, '')
+    ).join('') : '<div class="empty">No patterns yet.</div>';
+
+    const sel = document.getElementById('task-pattern');
+    sel.innerHTML = '<option value="">— none —</option>' +
+      cache.patterns.map(p => `<option value="${p.entry_id}">${p.title}</option>`).join('');
+  }
+
+  async function loadJobs(){
+    const data = await apiFetch('/job-applications');
+    cache.jobs = data.job_applications;
+    const list = document.getElementById('jobList');
+    list.innerHTML = cache.jobs.length ? cache.jobs.map(j =>
+      row(j.entry_id, j.title, j.scheduled_date, `${j.company} · ${j.role}`,
+        `<span class="${badgeClass(j.status)}">${j.status}</span>`)
+    ).join('') : '<div class="empty">No job applications yet.</div>';
+  }
+
+  async function loadTasks(){
+    const data = await apiFetch('/tasks');
+    cache.tasks = data.tasks;
+    const list = document.getElementById('taskList');
+    list.innerHTML = cache.tasks.length ? cache.tasks.map(t =>
+      row(t.entry_id, t.title, t.scheduled_date, t.pattern_id ? `from pattern #${t.pattern_id}` : 'one-off',
+        `<span class="badge ${t.completed ? 'offer' : 'mood'}">${t.completed ? 'done' : 'open'}</span>`)
+    ).join('') : '<div class="empty">No tasks yet.</div>';
+  }
+
+  async function loadJournal(){
+    const data = await apiFetch('/journal-entries');
+    cache.journal = data.journal_entries;
+    const list = document.getElementById('journalList');
+    list.innerHTML = cache.journal.length ? cache.journal.map(j =>
+      row(j.entry_id, j.title, j.scheduled_date, (j.content || '').slice(0, 60),
+        `<span class="badge mood">${j.mood}</span>`)
+    ).join('') : '<div class="empty">No journal entries yet.</div>';
+  }
+
+  function buildOverview(){
+    const all = [
+      ...cache.jobs.map(x => ({...x, _type: 'job application'})),
+      ...cache.patterns.map(x => ({...x, _type: 'pattern'})),
+      ...cache.tasks.map(x => ({...x, _type: 'task'})),
+      ...cache.journal.map(x => ({...x, _type: 'journal'}))
+    ].sort((a, b) => (b.scheduled_date || '').localeCompare(a.scheduled_date || ''));
+
+    const el = document.getElementById('overviewList');
+    if (!all.length) { el.innerHTML = '<div class="empty">Nothing logged yet.</div>'; return; }
+
+    el.innerHTML = all.map(e =>
+      `<div class="row">
+        <span class="id">#${e.entry_id}</span>
+        <div class="main">
+          <div class="title">${e.title || '(untitled)'}</div>
+          <div class="meta">${e.scheduled_date || 'no date'}</div>
+        </div>
+        <span class="type-tag">${e._type}</span>
+      </div>`
+    ).join('');
+  }
+
+  function val(id){ return document.getElementById(id).value; }
+  function setMsg(id, text, ok){
+    const el = document.getElementById(id);
+    el.textContent = text;
+    el.className = 'status-msg ' + (ok ? 'ok' : 'bad');
+  }
+
+  async function submitJob(){
+    try {
+      await apiFetch('/job-applications', { method: 'POST', body: JSON.stringify({
+        title: val('job-title'),
+        scheduled_date: val('job-date'),
+        notes: val('job-notes'),
+        company: val('job-company'),
+        role: val('job-role'),
+        status: val('job-status'),
+        job_link: val('job-link') || null,
+        cv_version_id: val('job-cv') ? parseInt(val('job-cv')) : null
+      })});
+      setMsg('job-msg', 'saved', true);
+      await loadJobs(); buildOverview();
+    } catch (e) { setMsg('job-msg', e.message, false); }
+  }
+
+  async function submitPattern(){
+    try {
+      await apiFetch('/patterns', { method: 'POST', body: JSON.stringify({
+        title: val('pat-title'),
+        scheduled_date: val('pat-date'),
+        notes: val('pat-notes'),
+        recurrence_rule: val('pat-rule'),
+        default_duration_min: parseInt(val('pat-duration'))
+      })});
+      setMsg('pat-msg', 'saved', true);
+      await loadPatterns(); buildOverview();
+    } catch (e) { setMsg('pat-msg', e.message, false); }
+  }
+
+  async function submitTask(){
+    try {
+      await apiFetch('/tasks', { method: 'POST', body: JSON.stringify({
+        title: val('task-title'),
+        scheduled_date: val('task-date'),
+        notes: val('task-notes'),
+        completed: val('task-completed') === 'true',
+        pattern_id: val('task-pattern') ? parseInt(val('task-pattern')) : null
+      })});
+      setMsg('task-msg', 'saved', true);
+      await loadTasks(); buildOverview();
+    } catch (e) { setMsg('task-msg', e.message, false); }
+  }
+
+  async function submitJournal(){
+    try {
+      await apiFetch('/journal-entries', { method: 'POST', body: JSON.stringify({
+        title: val('jrn-title'),
+        scheduled_date: val('jrn-date'),
+        notes: val('jrn-notes'),
+        content: val('jrn-content'),
+        mood: val('jrn-mood')
+      })});
+      setMsg('jrn-msg', 'saved', true);
+      await loadJournal(); buildOverview();
+    } catch (e) { setMsg('jrn-msg', e.message, false); }
+  }
+
+  async function submitCV(){
+    try {
+      await apiFetch('/cv-versions', { method: 'POST', body: JSON.stringify({
+        filename: val('cv-filename')
+      })});
+      setMsg('cv-msg', 'saved', true);
+      await loadCVs();
+    } catch (e) { setMsg('cv-msg', e.message, false); }
+  }
+</script>
+
+</body>
+</html>
