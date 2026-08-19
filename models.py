@@ -191,3 +191,32 @@ class CVVersion:
 
 
 
+class SuggestedJob:
+    def __init__(self, id, company, role, description, requirements, level, status, job_link, reasoning, source):
+        self.id = id
+        self.company = company
+        self.role = role
+        self.description = description
+        self.requirements = requirements
+        self.level = level
+        self.status = status
+        self.job_link = job_link
+        self.reasoning = reasoning
+        self.created_at = datetime.now()
+        self.source = source
+
+    def __repr__(self):
+        return f"Suggestedjob (id={self.id}, company={self.company}, level={self.level}, status={self.status})"
+    
+    def save(self,cursor):
+        cursor.execute(
+            "INSERT INTO suggested_jobs (company, role, description, requirements, level, status, job_link, reasoning, created_at, source) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",
+            (self.company, self.role, self.description, self.requirements, self.level, self.status, self.job_link, self.reasoning, self.created_at, self.source)
+        )
+        new_id = cursor.lastrowid
+        self.id = new_id
+
+    @staticmethod
+    def get_all(cursor):
+        cursor.execute("SELECT id, company, role, description, requirements, level, status, job_link, reasoning, created_at, source FROM suggested_jobs")
+        return cursor.fetchall()
