@@ -2,26 +2,89 @@ import anthropic
 import config
 import database
 import models
+from bs4 import BeautifulSoup
+import requests
+import json
+
 
 client = anthropic.Anthropic(api_key=config.ANTHROPIC_API_KEY)
 
+saved_count = 0
 
-def save_suggestion(company, role, description, requirements, level, job_link=None, reasoning=None, source=None):
+# save_suggestion function to save a job suggestion to the database
+def save_suggestion(company, role, description, requirements, level, match_score, job_link=None, reasoning=None, source=None):
+    global saved_count
+    if saved_count >= 5:
+        return "Maximum number of suggestions saved in this session (5) has been reached. Not saved."
+    
     connection = database.get_db_connection()
     cursor = connection.cursor()
 
     suggestion = models.SuggestedJob(
-        None, company, role, description, requirements, level, "unreviewed", job_link, reasoning, source
+        None, company, role, description, requirements, level, "unreviewed", match_score, job_link, reasoning, source
     )
+
+    job_existing = models.SuggestedJob.already_suggested(cursor, company, role)
+
+    if job_existing:
+        cursor.close()
+        connection.close()
+        return f"Suggestion for {role} at {company} already exists. Not saved."
+
+    if match_score < 7:
+        cursor.close()
+        connection.close()
+        return f"Suggestion for {role} at {company} has a match score of {match_score}, which is below the threshold. Not saved."
+    
+
     suggestion.save(cursor)
     connection.commit()
+    
+    saved_count += 1
 
     cursor.close()
     connection.close()
 
     return f"Saved suggestion: {role} at {company}"
    
-   
+
+
+# filter_remote function to filter out non-remote jobs from a list of job postings
+def filter_remote(jobs):
+    return [job for job in jobs if "remote" in job.get("location", "").lower()]   
+
+# clean_snippet function to clean HTML snippets from job postings
+def clean_snippet(text):
+    soup = BeautifulSoup(text, "html.parser")
+    return soup.get_text(separator=" ", strip=True)
+
+
+# slim_jobs function to return a simplified list of job postings with only relevant fields
+def slim_jobs(jobs):
+    return [
+        {
+            "title": job.get("title"),
+            "company": job.get("company"),
+            "location": job.get("location"),
+            "snippet": clean_snippet(job.get("snippet", "")),
+            "link": job.get("link"),
+        }
+        for job in jobs
+    ]
+
+# search_jobs_jooble function to search for jobs using the Jooble API
+def search_jobs_jooble(keywords, location=""):
+    response = requests.post(
+        f"https://jooble.org/api/{config.JOOBLE_API_KEY}",
+        json={"keywords": keywords, "location": location}
+    )
+    jobs = response.json().get("jobs", [])
+    remote_jobs = filter_remote(jobs)
+    slimmed = slim_jobs(remote_jobs)
+    return slimmed[:10]  # Return only the first 10 results
+
+
+
 
 
 
@@ -47,6 +110,8 @@ save_suggestion_tool = {
             "level": {"type": "string", 
                       "enum": ["entry", "junior", "mid", "senior"], 
                       "description": "The experience level for the job."},
+            "match_score": {"type": "number", 
+                            "description": "How well this job matches the user's profile, from 1 (poor fit) to 10 (excellent fit)."},        
             "job_link": {"type": ["string", "null"], 
                          "description": "(Optional) A link to the job posting."},
             "reasoning": {"type": ["string", "null"], 
@@ -55,20 +120,37 @@ save_suggestion_tool = {
                        "description": "(Optional) The source from where this job suggestion was found."}
         },
         "required": ["company", "role", "description", 
-                     "requirements", "level"]
+                     "requirements", "level", "match_score"]
     }
+}
+
+
+search_jobs_jooble_tool = {
+    "name": "search_jobs_jooble",
+    "description": "Search for jobs using the Jooble API.",
+    "input_schema": {
+        "type": "object",
+        "properties": {
+            "keywords": {"type": "string", "description": "Keywords to search for."},
+            "location": {"type": ["string", "null"], 
+                         "description": "(Optional) Location to filter jobs by."}
+        },
+        "required": ["keywords"]
+    }
+}
+
+
+
+tool_functions = {
+    "save_suggestion": save_suggestion,
+    "search_jobs_jooble": search_jobs_jooble
 }
 
 
 
 
 messages = [
-    {"role": "user", "content": """Here's a job posting — evaluate it:
-
-    Company: Wix
-    Role: Junior Backend Engineer
-    Description: Join our platform team building scalable APIs used by millions.
-    Requirements: Python, SQL, REST API experience, understanding of OOP. 0-2 years experience welcome."""}
+    {"role": "user", "content": "Search for jobs that match my profile using search_jobs_jooble, then evaluate each result and save the strong matches."}
 ]
 
 
@@ -80,9 +162,9 @@ while True:
 
     response = client.messages.create(
         model="claude-sonnet-5",
-        max_tokens=1024,
-        system=f"You are an AI agent that helps a user find job opportunities. Evaluate job postings against this profile, and call save_suggestion only for strong matches, always including your reasoning:\n{USER_PROFILE}",
-        tools=[save_suggestion_tool],
+        max_tokens=4096,
+        system=f"You are an AI agent that helps a user find job opportunities. Evaluate job postings against this profile, and call save_suggestion only for strong matches, always including your reasoning. Only consider fully remote positions. Run at most one or two searches per session, and evaluate each batch of results concisely before deciding what to save:\n{USER_PROFILE}",
+        tools=[save_suggestion_tool, search_jobs_jooble_tool],
         messages=messages
     )
 
@@ -100,12 +182,15 @@ while True:
     for block in response.content:
         if block.type == "tool_use":
             print(f"Model wants to call: {block.name}({block.input})")
-            result = save_suggestion(**block.input)
+            function_to_call = tool_functions.get(block.name)
+            result = function_to_call(**block.input)
+
             print(f"Real function returned: {result}")
+            content = result if isinstance(result, str) else json.dumps(result)
             tool_results.append({
                 "type": "tool_result",
                 "tool_use_id": block.id,
-                "content": result
+                "content": content
             })
 
     messages.append({"role": "user", "content": tool_results})

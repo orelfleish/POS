@@ -192,7 +192,7 @@ class CVVersion:
 
 
 class SuggestedJob:
-    def __init__(self, id, company, role, description, requirements, level, status, job_link, reasoning, source):
+    def __init__(self, id, company, role, description, requirements, level, status, match_score, job_link, reasoning, source):
         self.id = id
         self.company = company
         self.role = role
@@ -200,21 +200,31 @@ class SuggestedJob:
         self.requirements = requirements
         self.level = level
         self.status = status
+        self.match_score = match_score 
         self.job_link = job_link
         self.reasoning = reasoning
         self.created_at = datetime.now()
         self.source = source
+ 
 
     def __repr__(self):
         return f"Suggestedjob (id={self.id}, company={self.company}, level={self.level}, status={self.status})"
     
     def save(self,cursor):
         cursor.execute(
-            "INSERT INTO suggested_jobs (company, role, description, requirements, level, status, job_link, reasoning, created_at, source) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",
-            (self.company, self.role, self.description, self.requirements, self.level, self.status, self.job_link, self.reasoning, self.created_at, self.source)
+            "INSERT INTO suggested_jobs (company, role, description, requirements, level, status, match_score, job_link, reasoning, created_at, source) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",
+            (self.company, self.role, self.description, self.requirements, self.level, self.status, self.match_score, self.job_link, self.reasoning, self.created_at, self.source)
         )
         new_id = cursor.lastrowid
         self.id = new_id
+
+    @staticmethod
+    def already_suggested(cursor, company, role):
+        cursor.execute(
+            "SELECT id FROM suggested_jobs WHERE company = %s AND role = %s",
+            (company, role)
+        )
+        return cursor.fetchone() is not None
 
     @staticmethod
     def get_all(cursor):

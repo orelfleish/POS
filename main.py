@@ -86,17 +86,20 @@ import secrets
 #         break
 
 
-# print(secrets.token_hex(32))  # Generates a random 32-byte hex string for API key
+# print(secrets.token_hex(32))  # Generates a random 32-byte hex string for API keymi
+
 
 
 connection = database.get_db_connection()
 cursor = connection.cursor()
 
 suggestions = models.SuggestedJob.get_all(cursor)
-
 print("Suggested Jobs:")
 for suggestion in suggestions:
-    print(f"ID: {suggestion[0]}, Company: {suggestion[1]}, Role: {suggestion[2]}, Description: {suggestion[3]}, Requirements: {suggestion[4]}, Level: {suggestion[5]}, Status: {suggestion[6]}, Job Link: {suggestion[7]}, Reasoning: {suggestion[8]}, Created At: {suggestion[9]}, Source: {suggestion[10]}")
+    print(f"Company: {suggestion[1]}, Role: {suggestion[2]}, Match Score: {suggestion[6]}, Status: {suggestion[5]}")
 
-cursor.close()
-connection.close()
+
+   
+
+
+
