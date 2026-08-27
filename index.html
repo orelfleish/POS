@@ -3,294 +3,216 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>POS — Field Log</title>
+<title>POS // Control Panel</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root{
-    --cover:#1C2430;
-    --cover-2:#252F3D;
-    --page:#F2EEE3;
-    --page-2:#E8E2D2;
-    --ink:#20241F;
-    --ink-soft:#5B5A4E;
-    --brass:#B8863B;
-    --brass-dark:#8F6626;
-    --teal:#2F6F6B;
-    --rust:#B24C3B;
-    --line:#D8D0BC;
-    --line-dark:#33404F;
+    --bg:#0A0E16;
+    --surface:#121826;
+    --surface-2:#1A2233;
+    --surface-3:#212B40;
+    --border:#242E45;
+    --text:#E7ECF5;
+    --text-soft:#8A93AC;
+    --accent:#3FE0D0;
+    --accent-dim:#1F6E68;
+    --accent-2:#7C8CFF;
+    --success:#46D18B;
+    --warning:#F2B84B;
+    --danger:#FF5C7A;
   }
   *{box-sizing:border-box;}
   html,body{margin:0;padding:0;}
   body{
-    background:var(--cover);
-    color:var(--ink);
+    background:
+      radial-gradient(circle at 1px 1px, rgba(255,255,255,0.035) 1px, transparent 0) 0 0/22px 22px,
+      var(--bg);
+    color:var(--text);
     font-family:'Inter',sans-serif;
     min-height:100vh;
     display:flex;
     flex-direction:column;
   }
+  ::selection{background:var(--accent);color:var(--bg);}
   .topbar{
-    background:var(--cover);
-    color:#EDEAE1;
-    padding:18px 28px;
+    background:rgba(18,24,38,0.85);
+    backdrop-filter:blur(10px);
+    padding:16px 28px;
     display:flex;
     align-items:center;
     justify-content:space-between;
-    border-bottom:1px solid var(--line-dark);
+    border-bottom:1px solid var(--border);
     flex-wrap:wrap;
     gap:12px;
+    position:sticky;
+    top:0;
+    z-index:20;
   }
   .brand{display:flex;align-items:baseline;gap:10px;}
   .brand h1{
-    font-family:'Fraunces',serif;
-    font-size:26px;
+    font-family:'Space Grotesk',sans-serif;
+    font-size:22px;
     font-weight:700;
     margin:0;
     letter-spacing:0.5px;
+    background:linear-gradient(90deg,var(--accent),var(--accent-2));
+    -webkit-background-clip:text;
+    background-clip:text;
+    color:transparent;
   }
   .brand span{
-    font-family:'IBM Plex Mono',monospace;
-    font-size:11px;
-    color:var(--brass);
+    font-family:'JetBrains Mono',monospace;
+    font-size:10px;
+    color:var(--text-soft);
     text-transform:uppercase;
-    letter-spacing:1.5px;
+    letter-spacing:2px;
   }
-  .conn{
-    display:flex;
-    align-items:center;
-    gap:10px;
-    font-family:'IBM Plex Mono',monospace;
-    font-size:12px;
-  }
+  .conn{display:flex;align-items:center;gap:10px;font-family:'JetBrains Mono',monospace;font-size:12px;}
   .conn input{
-    background:var(--cover-2);
-    border:1px solid var(--line-dark);
-    color:#EDEAE1;
-    padding:7px 10px;
-    border-radius:4px;
-    font-family:'IBM Plex Mono',monospace;
+    background:var(--surface-2);
+    border:1px solid var(--border);
+    color:var(--text);
+    padding:8px 10px;
+    border-radius:6px;
+    font-family:'JetBrains Mono',monospace;
     font-size:12px;
-    width:220px;
+    width:210px;
   }
+  .conn input:focus{outline:none;border-color:var(--accent);}
   .conn button{
-    background:var(--brass);
-    color:var(--cover);
+    background:var(--accent);
+    color:#06231F;
     border:none;
-    padding:8px 14px;
-    border-radius:4px;
+    padding:8px 16px;
+    border-radius:6px;
     font-weight:600;
     font-size:12px;
     cursor:pointer;
     font-family:'Inter',sans-serif;
+    transition:box-shadow 0.15s;
   }
-  .conn button:hover{background:#CE9A4C;}
-  .dot{width:8px;height:8px;border-radius:50%;background:var(--ink-soft);}
-  .dot.ok{background:var(--teal);}
-  .dot.bad{background:var(--rust);}
-  .shell{
-    display:flex;
-    flex:1;
-    min-height:0;
-  }
-  nav{
-    width:190px;
-    background:var(--cover);
-    padding:22px 0;
-    display:flex;
-    flex-direction:column;
-    gap:2px;
-    border-right:1px solid var(--line-dark);
-    flex-shrink:0;
-  }
+  .conn button:hover{box-shadow:0 0 14px rgba(63,224,208,0.5);}
+  .dot{width:8px;height:8px;border-radius:50%;background:var(--text-soft);}
+  .dot.ok{background:var(--success);box-shadow:0 0 8px var(--success);}
+  .dot.bad{background:var(--danger);box-shadow:0 0 8px var(--danger);}
+  .shell{display:flex;flex:1;min-height:0;}
+  nav{width:190px;background:var(--surface);padding:20px 0;display:flex;flex-direction:column;gap:2px;border-right:1px solid var(--border);flex-shrink:0;}
   nav button{
-    background:transparent;
-    border:none;
-    color:#B7BDC9;
-    text-align:left;
-    padding:11px 26px;
-    font-family:'Inter',sans-serif;
-    font-size:14px;
-    font-weight:500;
-    cursor:pointer;
-    border-left:3px solid transparent;
+    background:transparent;border:none;color:var(--text-soft);text-align:left;
+    padding:11px 24px;font-family:'Inter',sans-serif;font-size:13px;font-weight:500;
+    cursor:pointer;border-left:2px solid transparent;letter-spacing:0.2px;
   }
-  nav button:hover{color:#EDEAE1;}
-  nav button.active{
-    color:#EDEAE1;
-    border-left:3px solid var(--brass);
-    background:var(--cover-2);
-  }
-  main{
-    flex:1;
-    background:var(--page);
-    padding:32px 40px 60px;
-    overflow-y:auto;
-  }
+  nav button:hover{color:var(--text);background:var(--surface-2);}
+  nav button.active{color:var(--accent);border-left:2px solid var(--accent);background:var(--surface-2);}
+  main{flex:1;padding:30px 38px 60px;overflow-y:auto;}
   .section{display:none;}
   .section.active{display:block;}
-  h2{
-    font-family:'Fraunces',serif;
-    font-size:26px;
-    margin:0 0 4px;
-    color:var(--ink);
-  }
-  .subhead{
-    font-family:'IBM Plex Mono',monospace;
-    font-size:12px;
-    color:var(--ink-soft);
-    margin-bottom:24px;
-    text-transform:uppercase;
-    letter-spacing:1px;
-  }
+  h2{font-family:'Space Grotesk',sans-serif;font-size:22px;margin:0 0 4px;color:var(--text);}
+  .subhead{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-soft);margin-bottom:22px;text-transform:uppercase;letter-spacing:1.5px;}
   .card{
-    background:#FBF9F3;
-    border:1px solid var(--line);
-    border-radius:6px;
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:10px;
     padding:22px 24px;
     margin-bottom:22px;
-    position:relative;
   }
-  .card::before{
-    content:"";
-    position:absolute;
-    top:0; right:0;
-    width:0; height:0;
-    border-style:solid;
-    border-width:0 16px 16px 0;
-    border-color:transparent var(--page-2) transparent transparent;
-  }
-  .card h3{
-    font-family:'Inter',sans-serif;
-    font-size:13px;
-    text-transform:uppercase;
-    letter-spacing:1px;
-    color:var(--brass-dark);
-    margin:0 0 16px;
-  }
-  .grid{
-    display:grid;
-    grid-template-columns:1fr 1fr;
-    gap:14px;
-  }
+  .card h3{font-family:'JetBrains Mono',monospace;font-size:11px;text-transform:uppercase;letter-spacing:1.5px;color:var(--accent);margin:0 0 16px;}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
   .field{display:flex;flex-direction:column;gap:5px;}
   .field.full{grid-column:1 / -1;}
-  .field label{
-    font-size:12px;
-    color:var(--ink-soft);
-    font-weight:500;
-  }
+  .field label{font-size:11px;color:var(--text-soft);font-weight:500;text-transform:uppercase;letter-spacing:0.5px;}
   .field input, .field select, .field textarea{
-    border:1px solid var(--line);
-    background:#fff;
-    border-radius:4px;
-    padding:9px 10px;
-    font-family:'Inter',sans-serif;
-    font-size:14px;
-    color:var(--ink);
+    border:1px solid var(--border);background:var(--surface-2);border-radius:6px;
+    padding:9px 10px;font-family:'Inter',sans-serif;font-size:14px;color:var(--text);
   }
+  .field input:focus, .field select:focus, .field textarea:focus{outline:none;border-color:var(--accent);}
   .field textarea{resize:vertical;min-height:44px;}
-  .submit-row{
-    margin-top:18px;
-    display:flex;
-    align-items:center;
-    gap:14px;
-  }
+  .submit-row{margin-top:18px;display:flex;align-items:center;gap:14px;}
   .btn-primary{
-    background:var(--teal);
-    color:#fff;
-    border:none;
-    padding:10px 20px;
-    border-radius:4px;
-    font-weight:600;
-    font-size:14px;
-    cursor:pointer;
-    font-family:'Inter',sans-serif;
+    background:linear-gradient(90deg,var(--accent),var(--accent-2));
+    color:#0A0E16;border:none;padding:10px 20px;border-radius:6px;font-weight:600;
+    font-size:13px;cursor:pointer;font-family:'Inter',sans-serif;transition:box-shadow 0.15s;
   }
-  .btn-primary:hover{background:#25605C;}
-  .status-msg{font-family:'IBM Plex Mono',monospace;font-size:12px;}
-  .status-msg.ok{color:var(--teal);}
-  .status-msg.bad{color:var(--rust);}
-  .list-title{
-    font-family:'IBM Plex Mono',monospace;
-    font-size:11px;
-    text-transform:uppercase;
-    letter-spacing:1px;
-    color:var(--ink-soft);
-    margin:28px 0 10px;
-  }
+  .btn-primary:hover{box-shadow:0 0 16px rgba(63,224,208,0.4);}
+  .status-msg{font-family:'JetBrains Mono',monospace;font-size:11px;}
+  .status-msg.ok{color:var(--success);}
+  .status-msg.bad{color:var(--danger);}
+  .list-title{font-family:'JetBrains Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:var(--text-soft);margin:26px 0 10px;}
   .row{
-    display:flex;
-    align-items:center;
-    gap:16px;
-    background:#fff;
-    border:1px solid var(--line);
-    border-left:4px solid var(--brass);
-    border-radius:4px;
-    padding:12px 16px;
-    margin-bottom:8px;
+    display:flex;align-items:center;gap:16px;background:var(--surface);
+    border:1px solid var(--border);border-left:3px solid var(--accent);
+    border-radius:8px;padding:12px 16px;margin-bottom:8px;
   }
-  .row .id{
-    font-family:'IBM Plex Mono',monospace;
-    font-size:11px;
-    color:var(--ink-soft);
-    background:var(--page-2);
-    padding:3px 7px;
-    border-radius:3px;
-    flex-shrink:0;
+  .row .id{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-soft);background:var(--surface-2);padding:3px 7px;border-radius:4px;flex-shrink:0;}
+  .row .main{flex:1;min-width:0;}
+  .row .main .title{font-family:'Inter',sans-serif;font-weight:600;font-size:14px;color:var(--text);}
+  .row .main .meta{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-soft);margin-top:2px;}
+  .badge{font-family:'JetBrains Mono',monospace;font-size:10px;padding:3px 9px;border-radius:20px;text-transform:uppercase;letter-spacing:0.5px;flex-shrink:0;}
+  .badge.applied{background:rgba(124,140,255,0.15);color:var(--accent-2);}
+  .badge.interview{background:rgba(242,184,75,0.15);color:var(--warning);}
+  .badge.offer{background:rgba(70,209,139,0.15);color:var(--success);}
+  .badge.rejected{background:rgba(255,92,122,0.15);color:var(--danger);}
+  .badge.mood{background:var(--surface-2);color:var(--text-soft);}
+  .empty{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--text-soft);padding:20px;text-align:center;border:1px dashed var(--border);border-radius:8px;}
+  .type-tag{font-family:'JetBrains Mono',monospace;font-size:9px;text-transform:uppercase;color:var(--accent);letter-spacing:0.5px;}
+
+  /* Calendar */
+  .cal-controls{display:flex;align-items:center;gap:10px;margin-bottom:20px;flex-wrap:wrap;}
+  .cal-controls button.nav-btn{
+    background:var(--surface-2);color:var(--text);border:1px solid var(--border);
+    padding:8px 14px;border-radius:6px;font-family:'JetBrains Mono',monospace;font-size:12px;cursor:pointer;
   }
-  .row .main{flex:1; min-width:0;}
-  .row .main .title{
-    font-family:'Fraunces',serif;
-    font-weight:600;
-    font-size:15px;
+  .cal-controls button.nav-btn:hover{border-color:var(--accent);color:var(--accent);}
+  .cal-controls input[type="date"]{
+    border:1px solid var(--border);background:var(--surface-2);color:var(--text);
+    border-radius:6px;padding:8px 10px;font-family:'JetBrains Mono',monospace;font-size:12px;
   }
-  .row .main .meta{
-    font-family:'IBM Plex Mono',monospace;
-    font-size:12px;
-    color:var(--ink-soft);
-    margin-top:2px;
+  .view-switch{display:flex;background:var(--surface-2);border:1px solid var(--border);border-radius:6px;overflow:hidden;margin-left:auto;}
+  .view-switch button{
+    background:transparent;border:none;color:var(--text-soft);padding:8px 16px;
+    font-family:'JetBrains Mono',monospace;font-size:11px;text-transform:uppercase;letter-spacing:1px;cursor:pointer;
   }
-  .badge{
-    font-family:'IBM Plex Mono',monospace;
-    font-size:11px;
-    padding:3px 9px;
-    border-radius:20px;
-    text-transform:uppercase;
-    letter-spacing:0.5px;
-    flex-shrink:0;
+  .view-switch button.active{background:var(--accent);color:#06231F;font-weight:600;}
+  .cal-allday{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;min-height:16px;}
+  .cal-chip{
+    display:flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--border);
+    border-left:3px solid var(--accent);border-radius:6px;padding:6px 12px;font-size:12px;color:var(--text);
   }
-  .badge.applied{background:#DCE7EA;color:var(--teal);}
-  .badge.interview{background:#F3E6C8;color:var(--brass-dark);}
-  .badge.offer{background:#DDEBD8;color:#3F7A3A;}
-  .badge.rejected{background:#F2DAD5;color:var(--rust);}
-  .badge.mood{background:var(--page-2);color:var(--ink-soft);}
-  .empty{
-    font-family:'IBM Plex Mono',monospace;
-    font-size:13px;
-    color:var(--ink-soft);
-    padding:20px;
-    text-align:center;
-    border:1px dashed var(--line);
-    border-radius:6px;
+  .cal-grid-wrap{position:relative;background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;}
+  .cal-hour{height:44px;border-top:1px solid var(--border);display:flex;}
+  .cal-hour:first-child{border-top:none;}
+  .cal-hour .label{width:56px;flex-shrink:0;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-soft);padding:4px 8px;border-right:1px solid var(--border);background:var(--surface-2);}
+  .now-line{position:absolute;left:56px;right:0;height:0;border-top:2px solid var(--danger);z-index:5;box-shadow:0 0 8px var(--danger);}
+  .now-line::before{content:"";position:absolute;left:-5px;top:-4px;width:9px;height:9px;border-radius:50%;background:var(--danger);box-shadow:0 0 8px var(--danger);}
+  .now-label{position:absolute;left:2px;top:-9px;font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--danger);background:var(--surface);padding:0 3px;}
+
+  /* Week view */
+  .week-grid{display:grid;grid-template-columns:56px repeat(7,1fr);background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;}
+  .week-head{padding:8px 6px;font-family:'JetBrains Mono',monospace;font-size:10px;text-align:center;border-bottom:1px solid var(--border);border-left:1px solid var(--border);color:var(--text-soft);}
+  .week-head.today{color:var(--accent);font-weight:600;}
+  .week-head.corner{border-left:none;}
+  .week-col{position:relative;border-left:1px solid var(--border);}
+  .week-hourline{height:44px;border-top:1px solid var(--border);}
+  .week-hourline:first-child{border-top:none;}
+  .week-timelabel{grid-column:1;font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text-soft);padding:2px 6px;background:var(--surface-2);border-top:1px solid var(--border);height:44px;box-sizing:border-box;}
+  .week-chip{position:absolute;top:2px;left:2px;right:2px;background:var(--surface-3);border-left:2px solid var(--accent);border-radius:4px;padding:2px 5px;font-size:9px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .week-now{position:absolute;left:0;right:0;height:0;border-top:2px solid var(--danger);z-index:5;box-shadow:0 0 6px var(--danger);}
+
+  /* Month view */
+  .month-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;}
+  .month-headcell{font-family:'JetBrains Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--text-soft);text-align:center;padding:4px 0 10px;}
+  .month-cell{
+    background:var(--surface);border:1px solid var(--border);border-radius:8px;min-height:88px;
+    padding:8px;cursor:pointer;transition:border-color 0.15s;
   }
-  .overview-day{margin-bottom:22px;}
-  .overview-day .date{
-    font-family:'IBM Plex Mono',monospace;
-    font-size:12px;
-    color:var(--brass-dark);
-    text-transform:uppercase;
-    letter-spacing:1px;
-    margin-bottom:8px;
-  }
-  .type-tag{
-    font-family:'IBM Plex Mono',monospace;
-    font-size:10px;
-    text-transform:uppercase;
-    color:var(--ink-soft);
-    letter-spacing:0.5px;
-  }
+  .month-cell:hover{border-color:var(--accent);}
+  .month-cell.other-month{opacity:0.35;}
+  .month-cell.today{border-color:var(--accent);box-shadow:0 0 10px rgba(63,224,208,0.25);}
+  .month-daynum{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--text-soft);margin-bottom:6px;}
+  .month-cell.today .month-daynum{color:var(--accent);font-weight:700;}
+  .month-dot-row{display:flex;flex-wrap:wrap;gap:3px;}
+  .month-dot{width:6px;height:6px;border-radius:50%;background:var(--accent);}
 </style>
 </head>
 <body>
@@ -298,7 +220,7 @@
 <div class="topbar">
   <div class="brand">
     <h1>POS</h1>
-    <span>Field Log</span>
+    <span>// Field Log</span>
   </div>
   <div class="conn">
     <span class="dot" id="connDot"></span>
@@ -311,6 +233,7 @@
 <div class="shell">
   <nav>
     <button class="active" data-tab="overview" onclick="showTab('overview')">Overview</button>
+    <button data-tab="calendar" onclick="showTab('calendar')">Calendar</button>
     <button data-tab="jobs" onclick="showTab('jobs')">Job Applications</button>
     <button data-tab="patterns" onclick="showTab('patterns')">Patterns</button>
     <button data-tab="tasks" onclick="showTab('tasks')">Tasks</button>
@@ -322,13 +245,30 @@
 
     <section class="section active" id="tab-overview">
       <h2>Overview</h2>
-      <div class="subhead">everything, by scheduled date</div>
+      <div class="subhead">everything // by scheduled date</div>
       <div id="overviewList"><div class="empty">Connect to your API to load entries.</div></div>
+    </section>
+
+    <section class="section" id="tab-calendar">
+      <h2>Calendar</h2>
+      <div class="subhead">day-level data // live time indicator</div>
+      <div class="cal-controls">
+        <button class="nav-btn" onclick="shiftCal(-1)">&larr;</button>
+        <input type="date" id="cal-date" onchange="renderCalendar()">
+        <button class="nav-btn" onclick="shiftCal(1)">&rarr;</button>
+        <button class="nav-btn" onclick="jumpToday()">today</button>
+        <div class="view-switch">
+          <button id="view-day" class="active" onclick="setCalView('day')">Day</button>
+          <button id="view-week" onclick="setCalView('week')">Week</button>
+          <button id="view-month" onclick="setCalView('month')">Month</button>
+        </div>
+      </div>
+      <div id="calContainer"></div>
     </section>
 
     <section class="section" id="tab-jobs">
       <h2>Job Applications</h2>
-      <div class="subhead">log a role, track its status</div>
+      <div class="subhead">log a role // track its status</div>
       <div class="card">
         <h3>New job application</h3>
         <div class="grid">
@@ -360,7 +300,7 @@
 
     <section class="section" id="tab-patterns">
       <h2>Patterns</h2>
-      <div class="subhead">recurring templates — drag onto real days later</div>
+      <div class="subhead">recurring templates</div>
       <div class="card">
         <h3>New pattern</h3>
         <div class="grid">
@@ -381,7 +321,7 @@
 
     <section class="section" id="tab-tasks">
       <h2>Tasks</h2>
-      <div class="subhead">one real occurrence, on one real day</div>
+      <div class="subhead">one real occurrence // one real day</div>
       <div class="card">
         <h3>New task</h3>
         <div class="grid">
@@ -456,22 +396,20 @@
 <script>
   const API_BASE = "http://127.0.0.1:8000";
   let apiKey = "";
+  let calView = "day";
 
   function showTab(name){
     document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
     document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
     document.getElementById('tab-' + name).classList.add('active');
     document.querySelector(`nav button[data-tab="${name}"]`).classList.add('active');
+    if (name === 'calendar') renderCalendar();
   }
 
   async function apiFetch(path, options = {}) {
     const res = await fetch(API_BASE + path, {
       ...options,
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': apiKey,
-        ...(options.headers || {})
-      }
+      headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, ...(options.headers || {}) }
     });
     if (!res.ok) {
       const body = await res.json().catch(() => ({}));
@@ -486,12 +424,13 @@
     const text = document.getElementById('connText');
     try {
       await apiFetch('/cv-versions');
-      dot.className = 'dot ok';
-      text.textContent = 'connected';
+      dot.className = 'dot ok'; text.textContent = 'connected';
       await loadAll();
+      const dateInput = document.getElementById('cal-date');
+      if (!dateInput.value) dateInput.value = todayStr();
+      renderCalendar();
     } catch (e) {
-      dot.className = 'dot bad';
-      text.textContent = 'connection failed';
+      dot.className = 'dot bad'; text.textContent = 'connection failed';
       console.error(e);
     }
   }
@@ -519,57 +458,40 @@
   async function loadCVs(){
     const data = await apiFetch('/cv-versions');
     cache.cvs = data.cv_versions;
-    const list = document.getElementById('cvList');
-    list.innerHTML = cache.cvs.length ? cache.cvs.map(c =>
-      row(c.id, c.filename, '', '', '')
-    ).join('') : '<div class="empty">No CVs yet.</div>';
-
+    document.getElementById('cvList').innerHTML = cache.cvs.length ? cache.cvs.map(c =>
+      row(c.id, c.filename, '', '', '')).join('') : '<div class="empty">No CVs yet.</div>';
     const sel = document.getElementById('job-cv');
-    sel.innerHTML = '<option value="">— none —</option>' +
-      cache.cvs.map(c => `<option value="${c.id}">${c.filename}</option>`).join('');
+    sel.innerHTML = '<option value="">— none —</option>' + cache.cvs.map(c => `<option value="${c.id}">${c.filename}</option>`).join('');
   }
 
   async function loadPatterns(){
     const data = await apiFetch('/patterns');
     cache.patterns = data.patterns;
-    const list = document.getElementById('patternList');
-    list.innerHTML = cache.patterns.length ? cache.patterns.map(p =>
-      row(p.entry_id, p.title, p.scheduled_date, `${p.recurrence_rule} · ${p.default_duration_min}min`, '')
-    ).join('') : '<div class="empty">No patterns yet.</div>';
-
+    document.getElementById('patternList').innerHTML = cache.patterns.length ? cache.patterns.map(p =>
+      row(p.entry_id, p.title, p.scheduled_date, `${p.recurrence_rule} · ${p.default_duration_min}min`, '')).join('') : '<div class="empty">No patterns yet.</div>';
     const sel = document.getElementById('task-pattern');
-    sel.innerHTML = '<option value="">— none —</option>' +
-      cache.patterns.map(p => `<option value="${p.entry_id}">${p.title}</option>`).join('');
+    sel.innerHTML = '<option value="">— none —</option>' + cache.patterns.map(p => `<option value="${p.entry_id}">${p.title}</option>`).join('');
   }
 
   async function loadJobs(){
     const data = await apiFetch('/job-applications');
     cache.jobs = data.job_applications;
-    const list = document.getElementById('jobList');
-    list.innerHTML = cache.jobs.length ? cache.jobs.map(j =>
-      row(j.entry_id, j.title, j.scheduled_date, `${j.company} · ${j.role}`,
-        `<span class="${badgeClass(j.status)}">${j.status}</span>`)
-    ).join('') : '<div class="empty">No job applications yet.</div>';
+    document.getElementById('jobList').innerHTML = cache.jobs.length ? cache.jobs.map(j =>
+      row(j.entry_id, j.title, j.scheduled_date, `${j.company} · ${j.role}`, `<span class="${badgeClass(j.status)}">${j.status}</span>`)).join('') : '<div class="empty">No job applications yet.</div>';
   }
 
   async function loadTasks(){
     const data = await apiFetch('/tasks');
     cache.tasks = data.tasks;
-    const list = document.getElementById('taskList');
-    list.innerHTML = cache.tasks.length ? cache.tasks.map(t =>
-      row(t.entry_id, t.title, t.scheduled_date, t.pattern_id ? `from pattern #${t.pattern_id}` : 'one-off',
-        `<span class="badge ${t.completed ? 'offer' : 'mood'}">${t.completed ? 'done' : 'open'}</span>`)
-    ).join('') : '<div class="empty">No tasks yet.</div>';
+    document.getElementById('taskList').innerHTML = cache.tasks.length ? cache.tasks.map(t =>
+      row(t.entry_id, t.title, t.scheduled_date, t.pattern_id ? `from pattern #${t.pattern_id}` : 'one-off', `<span class="badge ${t.completed ? 'offer' : 'mood'}">${t.completed ? 'done' : 'open'}</span>`)).join('') : '<div class="empty">No tasks yet.</div>';
   }
 
   async function loadJournal(){
     const data = await apiFetch('/journal-entries');
     cache.journal = data.journal_entries;
-    const list = document.getElementById('journalList');
-    list.innerHTML = cache.journal.length ? cache.journal.map(j =>
-      row(j.entry_id, j.title, j.scheduled_date, (j.content || '').slice(0, 60),
-        `<span class="badge mood">${j.mood}</span>`)
-    ).join('') : '<div class="empty">No journal entries yet.</div>';
+    document.getElementById('journalList').innerHTML = cache.journal.length ? cache.journal.map(j =>
+      row(j.entry_id, j.title, j.scheduled_date, (j.content || '').slice(0, 60), `<span class="badge mood">${j.mood}</span>`)).join('') : '<div class="empty">No journal entries yet.</div>';
   }
 
   function buildOverview(){
@@ -579,21 +501,207 @@
       ...cache.tasks.map(x => ({...x, _type: 'task'})),
       ...cache.journal.map(x => ({...x, _type: 'journal'}))
     ].sort((a, b) => (b.scheduled_date || '').localeCompare(a.scheduled_date || ''));
-
     const el = document.getElementById('overviewList');
     if (!all.length) { el.innerHTML = '<div class="empty">Nothing logged yet.</div>'; return; }
-
     el.innerHTML = all.map(e =>
       `<div class="row">
         <span class="id">#${e.entry_id}</span>
-        <div class="main">
-          <div class="title">${e.title || '(untitled)'}</div>
-          <div class="meta">${e.scheduled_date || 'no date'}</div>
-        </div>
+        <div class="main"><div class="title">${e.title || '(untitled)'}</div><div class="meta">${e.scheduled_date || 'no date'}</div></div>
         <span class="type-tag">${e._type}</span>
-      </div>`
-    ).join('');
+      </div>`).join('');
   }
+
+  /* ---------- Calendar ---------- */
+
+  function todayStr(){
+    const d = new Date();
+    return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+  }
+  function fmtDate(d){
+    return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+  }
+  function parseDate(s){
+    const [y,m,d] = s.split('-').map(Number);
+    return new Date(y, m-1, d);
+  }
+
+  function allEntries(){
+    return [
+      ...cache.jobs.map(x => ({...x, _type: 'job', _label: `${x.company} — ${x.role}`})),
+      ...cache.patterns.map(x => ({...x, _type: 'pattern', _label: x.title})),
+      ...cache.tasks.map(x => ({...x, _type: 'task', _label: x.title})),
+      ...cache.journal.map(x => ({...x, _type: 'journal', _label: x.title}))
+    ];
+  }
+
+  function setCalView(v){
+    calView = v;
+    ['day','week','month'].forEach(x => document.getElementById('view-'+x).classList.toggle('active', x===v));
+    renderCalendar();
+  }
+
+  function shiftCal(delta){
+    const input = document.getElementById('cal-date');
+    const d = parseDate(input.value || todayStr());
+    if (calView === 'month'){ d.setMonth(d.getMonth() + delta); }
+    else if (calView === 'week'){ d.setDate(d.getDate() + delta * 7); }
+    else { d.setDate(d.getDate() + delta); }
+    input.value = fmtDate(d);
+    renderCalendar();
+  }
+
+  function jumpToday(){
+    document.getElementById('cal-date').value = todayStr();
+    renderCalendar();
+  }
+
+  function renderCalendar(){
+    const dateInput = document.getElementById('cal-date');
+    if (!dateInput.value) dateInput.value = todayStr();
+    const selected = dateInput.value;
+    const container = document.getElementById('calContainer');
+    if (calView === 'day') container.innerHTML = dayViewHtml();
+    else if (calView === 'week') container.innerHTML = weekViewHtml(selected);
+    else container.innerHTML = monthViewHtml(selected);
+
+    if (calView === 'day') { buildDayGrid(); updateDayNow(selected); attachDayChips(selected); }
+    if (calView === 'week') { positionWeekNow(selected); }
+  }
+
+  function dayViewHtml(){
+    return `
+      <div class="list-title">All-day entries (no time-of-day stored yet)</div>
+      <div class="cal-allday" id="calAllDay"><span class="empty" style="border:none;padding:4px 0;">Nothing scheduled this day.</span></div>
+      <div class="cal-grid-wrap" id="calGridWrap"></div>`;
+  }
+
+  function attachDayChips(selected){
+    const items = allEntries().filter(e => e.scheduled_date === selected);
+    const el = document.getElementById('calAllDay');
+    el.innerHTML = items.length
+      ? items.map(e => `<div class="cal-chip"><span class="type-tag">${e._type}</span> ${e._label || '(untitled)'}</div>`).join('')
+      : '<span class="empty" style="border:none;padding:4px 0;">Nothing scheduled this day.</span>';
+  }
+
+  function buildDayGrid(){
+    const wrap = document.getElementById('calGridWrap');
+    let html = '';
+    for (let h = 0; h < 24; h++){
+      html += `<div class="cal-hour"><div class="label">${String(h).padStart(2,'0')}:00</div></div>`;
+    }
+    html += `<div class="now-line" id="nowLine" style="display:none;"><span class="now-label" id="nowLabel"></span></div>`;
+    wrap.innerHTML = html;
+  }
+
+  function updateDayNow(selected){
+    const nowLine = document.getElementById('nowLine');
+    if (!nowLine) return;
+    if (selected !== todayStr()){ nowLine.style.display = 'none'; return; }
+    const now = new Date();
+    const topPx = ((now.getHours() * 60 + now.getMinutes()) / 60) * 44;
+    nowLine.style.display = 'block';
+    nowLine.style.top = topPx + 'px';
+    document.getElementById('nowLabel').textContent = String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0');
+  }
+
+  function weekViewHtml(selected){
+    const sel = parseDate(selected);
+    const weekStart = new Date(sel);
+    weekStart.setDate(sel.getDate() - sel.getDay()); // Sunday start
+    const days = [];
+    for (let i=0;i<7;i++){ const d = new Date(weekStart); d.setDate(weekStart.getDate()+i); days.push(d); }
+
+    let head = `<div class="week-head corner"></div>`;
+    days.forEach(d => {
+      const isToday = fmtDate(d) === todayStr();
+      head += `<div class="week-head ${isToday?'today':''}">${['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][d.getDay()]}<br>${d.getDate()}</div>`;
+    });
+
+    let body = '';
+    for (let h=0; h<24; h++){
+      body += `<div class="week-timelabel">${String(h).padStart(2,'0')}:00</div>`;
+      days.forEach((d) => {
+        body += `<div class="week-col" data-date="${fmtDate(d)}"><div class="week-hourline"></div></div>`;
+      });
+    }
+
+    return `<div class="week-grid" id="weekGrid">${head}${body}</div>`;
+  }
+
+  function positionWeekNow(selected){
+    const grid = document.getElementById('weekGrid');
+    if (!grid) return;
+    const items = allEntries();
+    const cols = grid.querySelectorAll('.week-col');
+    const seen = {};
+    cols.forEach(col => {
+      const ds = col.getAttribute('data-date');
+      if (seen[ds]) return;
+      seen[ds] = true;
+      const dayItems = items.filter(e => e.scheduled_date === ds);
+      dayItems.slice(0,3).forEach((e, idx) => {
+        const chip = document.createElement('div');
+        chip.className = 'week-chip';
+        chip.style.top = (2 + idx*16) + 'px';
+        chip.textContent = e._label || e._type;
+        col.style.position = 'relative';
+        col.appendChild(chip);
+      });
+    });
+
+    const todayCols = grid.querySelectorAll(`.week-col[data-date="${todayStr()}"]`);
+    if (todayCols.length){
+      const now = new Date();
+      const topPx = ((now.getHours()*60+now.getMinutes())/60) * 44;
+      const rowIndex = Math.floor(topPx / 44);
+      const targetCol = todayCols[rowIndex] || todayCols[todayCols.length-1];
+      if (targetCol){
+        const line = document.createElement('div');
+        line.className = 'week-now';
+        line.style.top = (topPx - rowIndex*44) + 'px';
+        targetCol.style.position = 'relative';
+        targetCol.appendChild(line);
+      }
+    }
+  }
+
+  function monthViewHtml(selected){
+    const sel = parseDate(selected);
+    const year = sel.getFullYear(), month = sel.getMonth();
+    const firstOfMonth = new Date(year, month, 1);
+    const gridStart = new Date(firstOfMonth);
+    gridStart.setDate(firstOfMonth.getDate() - firstOfMonth.getDay());
+
+    const items = allEntries();
+    let cells = '';
+    ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].forEach(d => cells += `<div class="month-headcell">${d}</div>`);
+
+    for (let i=0;i<42;i++){
+      const d = new Date(gridStart);
+      d.setDate(gridStart.getDate()+i);
+      const ds = fmtDate(d);
+      const inMonth = d.getMonth() === month;
+      const isToday = ds === todayStr();
+      const count = items.filter(e => e.scheduled_date === ds).length;
+      const dots = Array.from({length: Math.min(count,5)}).map(()=>'<span class="month-dot"></span>').join('');
+      cells += `<div class="month-cell ${inMonth?'':'other-month'} ${isToday?'today':''}" onclick="jumpToDay('${ds}')">
+        <div class="month-daynum">${d.getDate()}</div>
+        <div class="month-dot-row">${dots}</div>
+      </div>`;
+    }
+    return `<div class="month-grid">${cells}</div>`;
+  }
+
+  function jumpToDay(ds){
+    document.getElementById('cal-date').value = ds;
+    setCalView('day');
+  }
+
+  setInterval(() => {
+    if (document.getElementById('tab-calendar').classList.contains('active')){
+      renderCalendar();
+    }
+  }, 60000);
 
   function val(id){ return document.getElementById(id).value; }
   function setMsg(id, text, ok){
@@ -605,67 +713,51 @@
   async function submitJob(){
     try {
       await apiFetch('/job-applications', { method: 'POST', body: JSON.stringify({
-        title: val('job-title'),
-        scheduled_date: val('job-date'),
-        notes: val('job-notes'),
-        company: val('job-company'),
-        role: val('job-role'),
-        status: val('job-status'),
-        job_link: val('job-link') || null,
-        cv_version_id: val('job-cv') ? parseInt(val('job-cv')) : null
+        title: val('job-title'), scheduled_date: val('job-date'), notes: val('job-notes'),
+        company: val('job-company'), role: val('job-role'), status: val('job-status'),
+        job_link: val('job-link') || null, cv_version_id: val('job-cv') ? parseInt(val('job-cv')) : null
       })});
       setMsg('job-msg', 'saved', true);
-      await loadJobs(); buildOverview();
+      await loadJobs(); buildOverview(); renderCalendar();
     } catch (e) { setMsg('job-msg', e.message, false); }
   }
 
   async function submitPattern(){
     try {
       await apiFetch('/patterns', { method: 'POST', body: JSON.stringify({
-        title: val('pat-title'),
-        scheduled_date: val('pat-date'),
-        notes: val('pat-notes'),
-        recurrence_rule: val('pat-rule'),
-        default_duration_min: parseInt(val('pat-duration'))
+        title: val('pat-title'), scheduled_date: val('pat-date'), notes: val('pat-notes'),
+        recurrence_rule: val('pat-rule'), default_duration_min: parseInt(val('pat-duration'))
       })});
       setMsg('pat-msg', 'saved', true);
-      await loadPatterns(); buildOverview();
+      await loadPatterns(); buildOverview(); renderCalendar();
     } catch (e) { setMsg('pat-msg', e.message, false); }
   }
 
   async function submitTask(){
     try {
       await apiFetch('/tasks', { method: 'POST', body: JSON.stringify({
-        title: val('task-title'),
-        scheduled_date: val('task-date'),
-        notes: val('task-notes'),
-        completed: val('task-completed') === 'true',
-        pattern_id: val('task-pattern') ? parseInt(val('task-pattern')) : null
+        title: val('task-title'), scheduled_date: val('task-date'), notes: val('task-notes'),
+        completed: val('task-completed') === 'true', pattern_id: val('task-pattern') ? parseInt(val('task-pattern')) : null
       })});
       setMsg('task-msg', 'saved', true);
-      await loadTasks(); buildOverview();
+      await loadTasks(); buildOverview(); renderCalendar();
     } catch (e) { setMsg('task-msg', e.message, false); }
   }
 
   async function submitJournal(){
     try {
       await apiFetch('/journal-entries', { method: 'POST', body: JSON.stringify({
-        title: val('jrn-title'),
-        scheduled_date: val('jrn-date'),
-        notes: val('jrn-notes'),
-        content: val('jrn-content'),
-        mood: val('jrn-mood')
+        title: val('jrn-title'), scheduled_date: val('jrn-date'), notes: val('jrn-notes'),
+        content: val('jrn-content'), mood: val('jrn-mood')
       })});
       setMsg('jrn-msg', 'saved', true);
-      await loadJournal(); buildOverview();
+      await loadJournal(); buildOverview(); renderCalendar();
     } catch (e) { setMsg('jrn-msg', e.message, false); }
   }
 
   async function submitCV(){
     try {
-      await apiFetch('/cv-versions', { method: 'POST', body: JSON.stringify({
-        filename: val('cv-filename')
-      })});
+      await apiFetch('/cv-versions', { method: 'POST', body: JSON.stringify({ filename: val('cv-filename') })});
       setMsg('cv-msg', 'saved', true);
       await loadCVs();
     } catch (e) { setMsg('cv-msg', e.message, false); }

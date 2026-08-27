@@ -47,8 +47,6 @@ def save_suggestion(company, role, description, requirements, level, match_score
 
     return f"Saved suggestion: {role} at {company}"
    
-
-
 # filter_remote function to filter out non-remote jobs from a list of job postings
 def filter_remote(jobs):
     return [job for job in jobs if "remote" in job.get("location", "").lower()]   
@@ -57,7 +55,6 @@ def filter_remote(jobs):
 def clean_snippet(text):
     soup = BeautifulSoup(text, "html.parser")
     return soup.get_text(separator=" ", strip=True)
-
 
 # slim_jobs function to return a simplified list of job postings with only relevant fields
 def slim_jobs(jobs):
@@ -83,19 +80,12 @@ def search_jobs_jooble(keywords, location=""):
     slimmed = slim_jobs(remote_jobs)
     return slimmed[:10]  # Return only the first 10 results
 
-
-
-
-
-
 USER_PROFILE = """
 Looking for: Backend / Software Engineer / AI Engineer roles, entry / junior level.
 Skills: Python, SQL, MySQL, REST API design (FastAPI), OOP, LLM agent developement.
 Preferences: Remote or Israel-based, backend-focused over full-stack.
 Background: HIT Computer Science graduate.
 """
-
-
 
 save_suggestion_tool = {
     "name": "save_suggestion",
@@ -124,7 +114,6 @@ save_suggestion_tool = {
     }
 }
 
-
 search_jobs_jooble_tool = {
     "name": "search_jobs_jooble",
     "description": "Search for jobs using the Jooble API.",
@@ -139,8 +128,6 @@ search_jobs_jooble_tool = {
     }
 }
 
-
-
 tool_functions = {
     "save_suggestion": save_suggestion,
     "search_jobs_jooble": search_jobs_jooble
@@ -148,51 +135,48 @@ tool_functions = {
 
 
 
+if __name__ == "__main__":
+    messages = [
+        {"role": "user", "content": "Search for jobs that match my profile using search_jobs_jooble, then evaluate each result and save the strong matches."}
+    ]
 
-messages = [
-    {"role": "user", "content": "Search for jobs that match my profile using search_jobs_jooble, then evaluate each result and save the strong matches."}
-]
+    round_num = 1
+    while True:
+        print(f"\n--- Round {round_num}: sending {len(messages)} message(s) to the model ---")
 
+        response = client.messages.create(
+            model="claude-sonnet-5",
+            max_tokens=4096,
+            system=f"You are an AI agent that helps a user find job opportunities. Evaluate job postings against this profile, and call save_suggestion only for strong matches, always including your reasoning. Only consider fully remote positions. Run at most one or two searches per session, and evaluate each batch of results concisely before deciding what to save:\n{USER_PROFILE}",
+            tools=[save_suggestion_tool, search_jobs_jooble_tool],
+            messages=messages
+        )
 
+        print(f"Model's stop_reason: {response.stop_reason}")
+        messages.append({"role": "assistant", "content": response.content})
 
+        if response.stop_reason != "tool_use":
+            print("Model gave a final answer. Loop ends here.")
+            for block in response.content:
+                if block.type == "text":
+                    print("\nFINAL ANSWER:", block.text)
+            break
 
-round_num = 1
-while True:
-    print(f"\n--- Round {round_num}: sending {len(messages)} message(s) to the model ---")
-
-    response = client.messages.create(
-        model="claude-sonnet-5",
-        max_tokens=4096,
-        system=f"You are an AI agent that helps a user find job opportunities. Evaluate job postings against this profile, and call save_suggestion only for strong matches, always including your reasoning. Only consider fully remote positions. Run at most one or two searches per session, and evaluate each batch of results concisely before deciding what to save:\n{USER_PROFILE}",
-        tools=[save_suggestion_tool, search_jobs_jooble_tool],
-        messages=messages
-    )
-
-    print(f"Model's stop_reason: {response.stop_reason}")
-    messages.append({"role": "assistant", "content": response.content})
-
-    if response.stop_reason != "tool_use":
-        print("Model gave a final answer. Loop ends here.")
+        tool_results = []
         for block in response.content:
-            if block.type == "text":
-                print("\nFINAL ANSWER:", block.text)
-        break
+            if block.type == "tool_use":
+                print(f"Model wants to call: {block.name}({block.input})")
+                function_to_call = tool_functions.get(block.name)
+                result = function_to_call(**block.input)
 
-    tool_results = []
-    for block in response.content:
-        if block.type == "tool_use":
-            print(f"Model wants to call: {block.name}({block.input})")
-            function_to_call = tool_functions.get(block.name)
-            result = function_to_call(**block.input)
+                print(f"Real function returned: {result}")
+                content = result if isinstance(result, str) else json.dumps(result)
+                tool_results.append({
+                    "type": "tool_result",
+                    "tool_use_id": block.id,
+                    "content": content
+                })
 
-            print(f"Real function returned: {result}")
-            content = result if isinstance(result, str) else json.dumps(result)
-            tool_results.append({
-                "type": "tool_result",
-                "tool_use_id": block.id,
-                "content": content
-            })
-
-    messages.append({"role": "user", "content": tool_results})
-    round_num += 1
+        messages.append({"role": "user", "content": tool_results})
+        round_num += 1
 
