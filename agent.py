@@ -5,47 +5,67 @@ import models
 from bs4 import BeautifulSoup
 import requests
 import json
+from abc import ABC, abstractmethod
 
 
 client = anthropic.Anthropic(api_key=config.ANTHROPIC_API_KEY)
 
 saved_count = 0
 
+
+class JobSource(ABC):
+    @abstractmethod
+    def search(self, keywords, location=""):
+        pass
+
+class JoobleJobSource(JobSource):
+    def search(self, keywords, location=""):
+        response = requests.post(
+            f"https://jooble.org/api/{config.JOOBLE_API_KEY}",
+            json={"keywords": keywords, "location": location}
+        )
+        jobs = response.json().get("jobs", [])
+        remote_jobs = filter_remote(jobs)
+        slimmed = slim_jobs(remote_jobs)
+        return slimmed[:10]  # Return only the first 10 results
+
+
 # save_suggestion function to save a job suggestion to the database
-def save_suggestion(company, role, description, requirements, level, match_score, job_link=None, reasoning=None, source=None):
+def save_suggestion(company, role, description, requirements, level, match_score, job_link=None, reasoning=None, source=None, connection=None):
     global saved_count
     if saved_count >= 5:
         return "Maximum number of suggestions saved in this session (5) has been reached. Not saved."
     
-    connection = database.get_db_connection()
+    own_connection = connection is None
+    if own_connection:       
+        connection = database.get_db_connection()
     cursor = connection.cursor()
 
-    suggestion = models.SuggestedJob(
-        None, company, role, description, requirements, level, "unreviewed", match_score, job_link, reasoning, source
-    )
+    try:
+        suggestion = models.SuggestedJob(
+            None, company, role, description, requirements, level, "unreviewed", match_score, job_link, reasoning, source
+        )
 
-    job_existing = models.SuggestedJob.already_suggested(cursor, company, role)
+        if models.SuggestedJob.already_suggested(cursor, company, role):
+            return f"Suggestion for {role} at {company} already exists. Not saved."
 
-    if job_existing:
+        if match_score < 7:
+            return f"Suggestion for {role} at {company} has a match score of {match_score}, which is below the threshold. Not saved."
+        
+
+        suggestion.save(cursor)
+        connection.commit()
+        
+        saved_count += 1
+
+        return f"Saved suggestion: {role} at {company}"
+
+    finally:
         cursor.close()
-        connection.close()
-        return f"Suggestion for {role} at {company} already exists. Not saved."
+        if own_connection:
+            connection.close()
 
-    if match_score < 7:
-        cursor.close()
-        connection.close()
-        return f"Suggestion for {role} at {company} has a match score of {match_score}, which is below the threshold. Not saved."
     
-
-    suggestion.save(cursor)
-    connection.commit()
-    
-    saved_count += 1
-
-    cursor.close()
-    connection.close()
-
-    return f"Saved suggestion: {role} at {company}"
    
 # filter_remote function to filter out non-remote jobs from a list of job postings
 def filter_remote(jobs):
@@ -69,16 +89,8 @@ def slim_jobs(jobs):
         for job in jobs
     ]
 
-# search_jobs_jooble function to search for jobs using the Jooble API
-def search_jobs_jooble(keywords, location=""):
-    response = requests.post(
-        f"https://jooble.org/api/{config.JOOBLE_API_KEY}",
-        json={"keywords": keywords, "location": location}
-    )
-    jobs = response.json().get("jobs", [])
-    remote_jobs = filter_remote(jobs)
-    slimmed = slim_jobs(remote_jobs)
-    return slimmed[:10]  # Return only the first 10 results
+
+
 
 USER_PROFILE = """
 Looking for: Backend / Software Engineer / AI Engineer roles, entry / junior level.
@@ -128,9 +140,11 @@ search_jobs_jooble_tool = {
     }
 }
 
+jooble_source = JoobleJobSource()
+
 tool_functions = {
     "save_suggestion": save_suggestion,
-    "search_jobs_jooble": search_jobs_jooble
+    "search_jobs_jooble": jooble_source.search
 }
 
 
